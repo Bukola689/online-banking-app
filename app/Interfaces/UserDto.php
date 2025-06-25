@@ -3,11 +3,15 @@
 namespace App\Interfaces;
 use App\Interfaces\DtoInterface;
 use Illuminate\Database\Eloquent\Model;
+use App\Http\Requests\UserRequest;
+use Illuminate\Http\Request;
 use Carbon\Carbon;
 
 class UserDto implements DtoInterface
 {
     private int $id;
+
+    private string $name;
 
     private string $email;
 
@@ -33,6 +37,12 @@ class UserDto implements DtoInterface
     public function getId(): int
     {
         return $this->id;
+    }
+
+    public function setName(string $name): self
+    {
+        $this->name = $name;
+        return $this;
     }
 
     public function getEmail(): string
@@ -65,36 +75,42 @@ class UserDto implements DtoInterface
         return $this->updated_at;
     }
 
-   public static function fromApiFormRequest(): self
+   public static function fromApiFormRequest(UserRequest $request): DtoInterface    
    {
-       // Implementation for creating a UserDto from an API form request
-       // This would typically involve validating and transforming the incoming data
+       $userDto = new UserDto();
+        $userDto->setId($request->input('id'));
+      $userDto->setName($request->input('name'));
+      $userDto->setEmail($request->input('email'));
+      $userDto->setPhoneNumber($request->input('phone_number'));
+      $userDto->setPin($request->input('pin'));
+      $userDto->setPassword($request->input('password'));
+      return $userDto;
    }
 
    public static function fromModel(Model $model): self
    {
-    //    $dto = new self();
-    //    $dto->id = $model->id;
-    //    $dto->email = $model->email;
-    //    $dto->phone_number = $model->phone_number;
-    //    $dto->pin = $model->pin;
-    //    $dto->password = $model->password;
-    //    $dto->created_at = $model->created_at;
-    //    $dto->updated_at = $model->updated_at;
-
-    //    return $dto;
+       $userDto = new UserDto();
+       $userDto->setId($model->id);
+       $userDto->setName($model->name);
+       $userDto->setEmail($model->email);
+       $userDto->setPhoneNumber($model->phone_number);
+       $userDto->setPin($model->pin);
+       $userDto->setPassword($model->password);
+       $userDto0>setCreated_at($model->created_at);
+       $userDto->setUpdated_at($model->updated_at);
+       return $userDto;
    }
 
    private static function toArray(Model $model): array
    {
-    //    return [
-    //        'id' => $model->id,
-    //        'email' => $model->email,
-    //        'phone_number' => $model->phone_number,
-    //        'pin' => $model->pin,
-    //        'password' => $model->password,
-    //        'created_at' => $model->created_at->toIso8601String(),
-    //        'updated_at' => $model->updated_at->toIso8601String(),
-    //    ];
+       return [
+           'id' => $model->id,
+           'email' => $model->email,
+           'phone_number' => $model->phone_number,
+           'pin' => $model->pin,
+           'password' => $model->password,
+           'created_at' => $model->created_at->toIso8601String(),
+           'updated_at' => $model->updated_at->toIso8601String(),
+       ];
    }
 }
