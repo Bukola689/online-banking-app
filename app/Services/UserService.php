@@ -8,13 +8,13 @@ use Illuminate\Support\Facades\Hash;
 
 class UserService
 {
-    public function createUser(UserDto $userDto)
+    public function createUser(UserDto $userDto): Model
     {
-        User::query()->create([
+      return User::query()->create([
             'name' => $userData->getName(),
             'email' => $userData->getEmail(),
             'phone_number' => $userData->getPhoneNumber(),
-            'password' => $userDto->password(),
+            'password' => $userDto->getPassword(),
         ]);
     }
 }

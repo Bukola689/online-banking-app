@@ -1,6 +1,6 @@
 <?php
 
-namespace App\Interfaces;
+namespace App\Dtos;
 use App\Interfaces\DtoInterface;
 use Illuminate\Database\Eloquent\Model;
 use App\Http\Requests\UserRequest;
@@ -28,21 +28,25 @@ class UserDto implements DtoInterface
 
     private Carbon $updated_at;
 
-   public function setId(int $id): self
+   public function getId()
    {
-       $this->id = $id;
-       return $this;
+       return $this->id;
    }
 
-    public function getId(): int
+    public function setId($id)
+   {
+       $this->id = $id;
+   }
+
+    public function getName()
     {
-        return $this->id;
+        //$this->name = $name;
+        return $this->name;
     }
 
-    public function setName(string $name): self
+     public function setName(string $name)
     {
         $this->name = $name;
-        return $this;
     }
 
     public function getEmail(): string
@@ -50,9 +54,19 @@ class UserDto implements DtoInterface
         return $this->email;
     }
 
+     public function setEmail(string $email)
+    {
+        $this->email = $email;
+    }
+
     public function getPhoneNumber(): string
     {
         return $this->phone_number;
+    }
+
+     public function setPhoneNumber(string $phone_number)
+    {
+        $this->phone_number = $phone_number;
     }
 
     public function getPin(): string
@@ -60,12 +74,22 @@ class UserDto implements DtoInterface
         return $this->pin;
     }
 
+      public function setPin(string $pin): void
+    {
+        $this->pin = $pin;
+    }
+
     public function getPassword(): string
     {
         return $this->password;
     }
 
-    public function getCreatedAt(): Carbon
+     public function setPassword(string $password)
+    {
+        $this->password = $password;
+    }
+
+    public function setCreatedAt(): Carbon
     {
         return $this->created_at;
     }
@@ -77,17 +101,16 @@ class UserDto implements DtoInterface
 
    public static function fromApiFormRequest(UserRequest $request): DtoInterface    
    {
-       $userDto = new UserDto();
-        $userDto->setId($request->input('id'));
+      $userDto = new UserDto();
       $userDto->setName($request->input('name'));
       $userDto->setEmail($request->input('email'));
       $userDto->setPhoneNumber($request->input('phone_number'));
-      $userDto->setPin($request->input('pin'));
+      //$userDto->setPin($request->input('pin'));
       $userDto->setPassword($request->input('password'));
       return $userDto;
    }
 
-   public static function fromModel(Model $model): self
+   public static function fromModel(Model $model): DtoInterface
    {
        $userDto = new UserDto();
        $userDto->setId($model->id);
@@ -101,7 +124,7 @@ class UserDto implements DtoInterface
        return $userDto;
    }
 
-   private static function toArray(Model $model): array
+   public static function toArray(Model $model): array
    {
        return [
            'id' => $model->id,
@@ -109,8 +132,8 @@ class UserDto implements DtoInterface
            'phone_number' => $model->phone_number,
            'pin' => $model->pin,
            'password' => $model->password,
-           'created_at' => $model->created_at->toIso8601String(),
-           'updated_at' => $model->updated_at->toIso8601String(),
+           'created_at' => $model->created_at,
+           'updated_at' => $model->updated_at,
        ];
    }
 }
