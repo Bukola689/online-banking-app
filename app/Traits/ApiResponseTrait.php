@@ -2,19 +2,24 @@
 
 namespace App\Traits;
 
+use Illuminate\Http\JsonResponse;
+use Illuminate\Support\Facades\Response;
+use Illuminate\Http\Request;
 use Illuminate\Validation\ValidationException;
 
 Trait ApiResponseTrait
 {
-    public function parseGivenData(array $data = [], int $statusCode = 200, array $headers = [])
+    private function parseGivenData(array $data = [], int $statusCode = 200, array $headers = []): array
     {
+        //success, message, result,errors,'exception',status, 'error_code
+
         $responseStructure = [
             'success' => $data['success'] ?? false,
             'message' => $data['message'] ?? null,
             'result' => $data['result'] ?? null
-        ];
+        ]; 
 
-        if (isset($data['error'])) {
+        if (isset($data['errors'])) {
             $responseStructure['errors'] = $data['errors'];
         }
 
@@ -45,40 +50,26 @@ Trait ApiResponseTrait
                $responseStructure['error_code'] = 1;   
             }
         }
-        return ['content' => $responseStructure, 'statuscode' =>$statuscode, 'headers' => $headers ];
+        return ['content' => $responseStructure, 'statusCode' =>$statusCode, 'headers' => $headers ];
     }
 
     public function apiResponse(array $data = [], int $statusCode = 200, array $headers = [])
     {
-        $result = $this->parseGivenData($data, $statuscode, $headers);
+        $result = $this->parseGivenData($data, $statusCode, $headers);
 
-        return response()->json($result['content'], $result['status'], $result['headers']);
+        return response()->json($result['content'], $result['statusCode'], $result['headers']);
     }
 
-    public function sendSuccess(mixed $data, string $message = '') {
-
-        $this->apiResponse([
+    public function sendSuccess($data, string $message = ''): JsonResponse 
+    {
+       return $this->apiResponse([
             'success' => true,
             'result' => $data,
             'message' => $message
         ]);
-        
-    }
+    }  
 
-     public function sendError(string $message = '', $statusCode = 400, \Exception $exception = null, int $error_code = 1) {
-
-        $this->apiResponse([
-            'success' => false,
-            'error_code' => $error_code,
-            'message' => $message,
-            'exception' => $exception
-        ], 
-           $statusCode
-       );
-
-    }
-
-     public function sendUnauthorized(string $message = 'unAuthorized') {
+     public function sendUnauthorized(string $message = 'unauthorized') {
          return $this->sendError($message);
     }
 
@@ -99,7 +90,7 @@ Trait ApiResponseTrait
          return  $this->apiResponse([
             'success' => false,
             'message' => $exception->getMessage(),
-            'message' => $exception->errors(),
+            'error' => $exception->errors(),
         ]);
 
     }

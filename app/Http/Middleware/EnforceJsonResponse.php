@@ -3,6 +3,9 @@
 namespace App\Http\Middleware;
 
 use Closure;
+use Symfony\Component\HttpFoundation\Response;
+use Illuminate\Http\JsonResponse;
+use Illuminate\Foundation\Http\Middleware\TransformsRequest;
 use Illuminate\Http\Request;
 
 class EnforceJsonResponse
@@ -16,12 +19,17 @@ class EnforceJsonResponse
      */
     public function handle(Request $request, Closure $next): Response
     {
-        if (
-            $request->expectsJson() ||
-            ($request->route() && in_array('api', $request->route()->middleware()))
-        ) {
-            $request->headers->set('Accept', 'application/vnd.api+json');
+        // if (
+        //     $request->expectsJson() ||
+        //     ($request->route() && in_array('api', $request->route()->middleware()))
+        // ) {
+        //     $request->headers->set('Accept', 'application/vnd.api+json');
+        // }
+
+        if ($request->route() != null && in_array('api', $request->route()->middleware())) {
+            $request->headers->set('Accept',  'application/vnd.api+json');
         }
+
         
         return $next($request);
     }

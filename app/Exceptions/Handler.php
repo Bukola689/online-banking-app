@@ -5,12 +5,19 @@ namespace App\Exceptions;
 use App\Traits\ApiResponseTrait;
 use Illuminate\Database\QueryException;
 use Illuminate\Database\UniqueConstrainedViolationException;
+use Illuminate\Database\Eloquent\ModelNotFoundException;
+use Illuminate\Support\Facades\Hash;
 use Illuminate\Support\Facades\Log;
 use Sympfony\Component\HttpKernel\Exception\HttpException;
 use Throwable;
+use Illuminate\Http\JsonResponse;
+use Symfony\Component\HttpFoundation\Response;
+use Symfony\Component\HttpFoundation\Exception\BadRequestException;
 use Illuminate\Http\Request;
+
 use Sympfony\Component\HttpKernel\Exception\NotFoundException;
 use Illuminate\Foundation\Exceptions\Handler as ExceptionHandler;
+use Symfony\Component\HttpFoundation\Response as SymfonyResponse;
 
 class Handler extends ExceptionHandler
 {
@@ -47,18 +54,38 @@ class Handler extends ExceptionHandler
         });
     }
 
-     public function render($request, $e)
+     public function render($request, $e): Response
     {
-        if ($request->expectsJson()) {
+        if ($request->expectsJson() || Str::contains($request->path(), 'api')) {
             Log::error($e);
+             if ($e instanceof AuthenticationException) {
+                 $statusCode = Response::HTTP_AUTHORIZED;
+                    return  $this->apiResponse([
+                       'message' => 'UnAuthorized or expire token, Try to Login Again',
+                       'success' => false,
+                       'exception' => $e,
+                       'error_code' =>  $statusCode,
+               ], $statusCode());
+            }
+
+             if ($e instanceof NotFoundHttpException) {
+                    return  $this->apiResponse([
+                       'message' => $e->getMessage(),
+                       'success' => false,
+                       'exception' => $e,
+                       'error_code' =>  $getStatusCode,
+               ], $e->getStatusCode());
+            }
+
              if ($e instanceof ValidationException) {
-                $statusCode = Response::HTTP_INTERNAL_SERVER_ERROR;
+                $statusCode = Response::HTTP_UNPROCESSABLE_ENTITY;
                     return  $this->apiResponse([
                        'message' => "Validation Fail",
                        'success' => false,
                        'exception' => $e,
                        'error_code' =>  $statusCode,
-               ]);
+                       'error' => $e->errors(),
+               ], $statusCode);
             }
 
              if ($e instanceof ModelNotFoundException) {
@@ -68,7 +95,7 @@ class Handler extends ExceptionHandler
                        'success' => false,
                        'exception' => $e,
                        'error_code' =>  $statusCode,
-               ]);
+               ], $statusCode);
             }
 
             if ($e instanceof UniqueConstraintViolationException) {
@@ -91,17 +118,58 @@ class Handler extends ExceptionHandler
                ]);
             }
 
+               if ($e instanceof MethodNotAllowedException) {
+                $statusCode = Response::HTTP_BAD_REQUEST;
+                    return  $this->apiResponse([
+                       'message' => $e->getMessage(),
+                       'success' => false,
+                       'exception' => $e,
+                       'error_code' => $statusCode,
+                    ], Response::HTTP_BAD_REQUEST);
+            }
+
+               if ($e instanceof PinNotSetException) {
+                $statusCode = Response::HTTP_BAD_REQUEST;
+                    return  $this->apiResponse([
+                       'message' => $e->getMessage(),
+                       'success' => false,
+                       'exception' => $e,
+                       'error_code' => $statusCode,
+               ],  Response::HTTP_BAD_REQUEST );
+            }
+
+             if ($e instanceof InvalidPinLengthException) {
+                $statusCode = Response::HTTP_BAD_REQUEST;
+                    return  $this->apiResponse([
+                       'message' => $e->getMessage(),
+                       'success' => false,
+                       'exception' => $e,
+                       'error_code' => $statusCode,
+               ],  Response::HTTP_BAD_REQUEST );
+            }
+
+             if ($e instanceof PinHasAlreadyBeenSetException ) {
+                $statusCode = Response::HTTP_BAD_REQUEST;
+                    return  $this->apiResponse([
+                       'message' => $e->getMessage(),
+                       'success' => false,
+                       'exception' => $e,
+                       'error_code' => $statusCode,
+               ],  Response::HTTP_BAD_REQUEST );
+            }
+
+
              if ($e instanceof \Exception) {
                 $statusCode = Response::HTTP_INTERNAL_SERVER_ERROR;
                     return  $this->apiResponse([
-                       'message' => "An Error Occur Please Try Again Later",
+                       'message' => "We could not handle your request",
                        'success' => false,
                        'exception' => $e,
                        'error_code' => $statusCode,
                ]);
             }
 
-             if ($e instanceof Error) {
+             if ($e instanceof \Error) {
                 $statusCode = Response::HTTP_INTERNAL_SERVER_ERROR;
                     return  $this->apiResponse([
                        'message' => "Could Not Execute Query",
