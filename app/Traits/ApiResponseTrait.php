@@ -62,14 +62,35 @@ Trait ApiResponseTrait
 
     public function sendSuccess($data, string $message = ''): JsonResponse 
     {
-       return $this->apiResponse([
-            'success' => true,
-            'result' => $data,
-            'message' => $message
-        ]);
+       return response()->json([
+        'success' => true,
+        'message' => $message,
+        'data'    => $data,
+       ], 200);
     }  
 
-     public function sendUnauthorized(string $message = 'unauthorized') {
+    //  public function sendError(string $message = '', int $statusCode = 400, \Exception $exception = null, int $error_code = 1): JsonResponse
+    // {
+    //    return $this->apiResponse([
+    //         'success' => false,
+    //         'message' => $message,
+    //         'error_code' => $error_code,
+    //         'exception' => $exception,
+    //     ], 
+    //         $statusCode );
+    // }  
+
+    protected function sendError(string $message, array $errors = [], int $statusCode = 400): JsonResponse
+{
+    return response()->json([
+        'success' => false,
+        'message' => $message,
+        'errors' => $errors,
+    ], $statusCode);
+}
+
+
+     public function sendUnauthorized(string $message = 'unauthorized'): JsonReponse {
          return $this->sendError($message);
     }
 

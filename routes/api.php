@@ -29,14 +29,15 @@ Route::middleware('auth:api')->get('/user', function (Request $request) {
 
     Route::group(['prefix'=> 'auth'], function() {
             Route::post('register', [RegisterController::class, 'register']);
-            Route::post('login', [LoginController::class, 'login']);
+             Route::post('login', [LoginController::class, 'login']);
+             Route::post('user', [LoginController::class, 'user']);
             Route::post('forgot-password', [ForgotPasswordController::class, 'forgotPassword']);
-         Route::group(['middleware' => 'auth:sanctum'], function() {
-             Route::post('setup/pin', [OnBoardingController::class, 'setupPin']);
-             Route::post('validate/pin', [PinController::class, 'validatePin']);
+          Route::group(['middleware' => 'auth:sanctum'], function() {
+            Route::post('setup/pin', [PinController::class, 'setupPin']);
+            Route::post('validate/pin', [PinController::class, 'validatePin']);
             Route::post('logout', [LogoutController::class, 'logout']);
             Route::post('/email/verification-notification', [VerifyEmailController::class, 'resendNotification'])->name('verification.send');
             Route::post('reset-password', [ResetPasswordController::class, 'resetPassword']); 
  
-         });
+          });
      });

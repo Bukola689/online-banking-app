@@ -36,10 +36,27 @@ class UserService implements UserServiceInterface
         return $user;
     }
 
+      public function hasSetPin(User $user): bool
+    {
+        return $user->pin != null;
+    }
+
+
+    public function validatePin(int $userId, string $pin): bool
+    {
+        $user = $this->getUserById($userId);
+
+        if(!$this->hasSetPin($user)) {
+            throw new InvalidPinLengthException("Pin Has Already Been Set");
+        }
+
+        return Hash::check($pin, $user->pin);
+    }
+
     public function setupPin(User $user, string $pin): void
     {
          if(!$this->hasSetPin($user)) {
-            throw new PinHasAlreadyBeenSetException("Pin Has Already Been Set");
+            throw new InvalidPinLengthException("Pin Has Already Been Set");
         }
 
         if(strlen($pin) != 4) {
@@ -49,23 +66,6 @@ class UserService implements UserServiceInterface
         $user->pin = Hash::make($pin);
         $user->save();
     }
-
-     public function validatePin(int $userId, string $pin): bool
-    {
-        $user = $this->getUserById($userId);
-
-        if(!$this->hasSetPin($user)) {
-            throw new PinNotSetException("Please Set Your Pin");
-        }
-
-        return Hash::check($pin, $user->pin);
-    }
-
-      public function hasSetPin(User $user): bool
-    {
-        return $user->pin != null;
-    }
-
    
 
 
